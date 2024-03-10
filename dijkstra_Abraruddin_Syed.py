@@ -2,7 +2,6 @@ import numpy as np
 import cv2
 import math
 
-from queue import PriorityQueue
 
 
 # Function to map coordinates to the bottom left of the image
@@ -28,6 +27,7 @@ def draw_hexagon(img, center, side_length, color, thickness):
 
     # Draw the hexagon filled with the specified color
     cv2.fillPoly(img, [np.array(vertices)], (0, 0, 0))
+    cv2.polylines(img, [np.array(vertices)], isClosed=True, color=color, thickness=thickness)
 
 def draw_obstacles(obstacle_map, obstacles):
     for obstacle in obstacles:
@@ -60,29 +60,33 @@ obstacle_map = np.ones((height, width, 3), dtype=np.uint8) * 255
 # Define obstacles
 # Define obstacles
 obstacles = [
-    {'shape': 'rectangle', 'bottom_left': (100, 100), 'top_right': (175, 500), 'color': (0, 0, 0), 'thickness': -1},  
+    {'shape': 'rectangle', 'bottom_left': (95, 95), 'top_right': (180, 500), 'color': (128, 128, 128), 'thickness':-1},  # Rectangle obstacle 1
+    {'shape': 'rectangle', 'bottom_left': (100, 100), 'top_right': (175, 500), 'color': (0, 0, 0), 'thickness': -1},  # Rectangle obstacle 2
 
-    {'shape': 'rectangle', 'bottom_left': (275, 0), 'top_right': (350, 400), 'color': (0, 0, 0), 'thickness':-1},
+    {'shape': 'rectangle', 'bottom_left': (270, 0), 'top_right': (355, 405), 'color': (128, 128, 128), 'thickness':-1},  # Rectangle obstacle 3
+    {'shape': 'rectangle', 'bottom_left': (275, 0), 'top_right': (350, 400), 'color': (0, 0, 0), 'thickness':-1},  # Rectangle obstacle 4
 
-    {'shape': 'hexagon', 'center': (650, 250), 'side_length': 150,'color': (128, 128, 128), 'thickness': 4},  
+    {'shape': 'hexagon', 'center': (650, 250), 'side_length': 150,'color': (128, 128, 128), 'thickness': 4},  # Hexagon obstacle
 
+    {'shape': 'rectangle', 'bottom_left': (1020, 45), 'top_right': (1105, 455), 'thickness': -1, 'color': (128, 128, 128)},  # Rectangle obstacle 5
 
-    {'shape': 'rectangle', 'bottom_left': (900, 50), 'top_right': (1100, 125), 'thickness': -1,'color': (0,0, 0)}, 
+    {'shape': 'rectangle', 'bottom_left': (895, 45), 'top_right': (1105, 130), 'thickness': -1, 'color': (128, 128, 128)},  # Rectangle obstacle 6
+    {'shape': 'rectangle', 'bottom_left': (900, 50), 'top_right': (1100, 125), 'thickness': -1,'color': (0,0, 0)},  # Rectangle obstacle 7
 
-    {'shape': 'rectangle', 'bottom_left': (900, 375), 'top_right': (1100, 450), 'thickness': -1,'color': (0, 0, 0)}, 
+    {'shape': 'rectangle', 'bottom_left': (895, 370), 'top_right': (1105, 455), 'thickness': -1, 'color': (128, 128, 128)},  # Rectangle obstacle 8
+    {'shape': 'rectangle', 'bottom_left': (900, 375), 'top_right': (1100, 450), 'thickness': -1,'color': (0, 0, 0)},  # Rectangle obstacle 9
 
-    {'shape': 'rectangle', 'bottom_left': (1025, 50), 'top_right': (1100, 450), 'thickness': -1,'color': (0, 0, 0)}, 
+    {'shape': 'rectangle', 'bottom_left': (1025, 50), 'top_right': (1100, 450), 'thickness': -1,'color': (0, 0, 0)},  # Rectangle obstacle 10
 
-
+    {'shape': 'rectangle', 'bottom_left': (0, 0), 'top_right': (1200, 5), 'color': (128, 128, 128), 'thickness': -1},  # Rectangle obstacle 11
+    {'shape': 'rectangle', 'bottom_left': (0, 0), 'top_right': (5, 500), 'color': (128, 128, 128), 'thickness': -1},  # Rectangle obstacle 12
+    {'shape': 'rectangle', 'bottom_left': (1195, 0), 'top_right': (1200, 500), 'color': (128, 128, 128), 'thickness': -1},  # Rectangle obstacle 13
+    {'shape': 'rectangle', 'bottom_left': (0, 495), 'top_right': (1200, 500), 'color': (128, 128, 128), 'thickness': -1},  # Rectangle obstacle 14
 ]
 
 # Draw obstacles on the obstacle map
 draw_obstacles(obstacle_map, obstacles)
 
-
-
-
-# Display the obstacle map
 cv2.imshow("Obstacle Map", obstacle_map)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
