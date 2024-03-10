@@ -1,9 +1,7 @@
 import numpy as np
 import cv2
 import math
-
 from queue import PriorityQueue
-
 
 # Function to map coordinates to the bottom left of the image
 def map_to_bottom_left(x, y, width, height):
@@ -31,6 +29,26 @@ def draw_hexagon(img, center, side_length, color, thickness):
     cv2.polylines(img, [np.array(vertices)], isClosed=True, color=color, thickness=thickness)
 
 def draw_obstacles(obstacle_map, obstacles):
+    """
+    Draw obstacles on the obstacle map.
+
+    Args:
+        obstacle_map (numpy.ndarray): The obstacle map.
+            A 2D numpy array representing the obstacle map.
+        obstacles (list): List of dictionaries representing the obstacles.
+            Each dictionary in the list represents an obstacle and contains the following keys:
+            - 'shape' (str): The shape of the obstacle ('rectangle' or 'hexagon').
+            - 'color' (tuple, optional): The color of the obstacle in RGB format. Default is black (0, 0, 0).
+            - 'thickness' (int, optional): The thickness of the obstacle's outline. Default is -1 (filled shape).
+            - 'transparency' (float, optional): The transparency of the obstacle. Default is 1.0 (fully opaque).
+            - 'bottom_left' (tuple): The bottom-left coordinates of the obstacle.
+            - 'top_right' (tuple): The top-right coordinates of the obstacle.
+            - 'center' (tuple): The center coordinates of the obstacle (for hexagon shape).
+            - 'side_length' (int): The side length of the hexagon (for hexagon shape).
+
+    Returns:
+        None
+    """
     for obstacle in obstacles:
         color = obstacle.get('color', (0, 0, 0))  # Default color is black
         thickness = obstacle.get('thickness', -1)  # Default to filled if thickness is not specified
@@ -46,12 +64,6 @@ def draw_obstacles(obstacle_map, obstacles):
             draw_hexagon(obstacle_map, center, obstacle['side_length'], color_with_transparency, thickness)
 
 
-
-
-
-
-
-
 # Define image dimensions
 width = 1200
 height = 500
@@ -60,7 +72,6 @@ height = 500
 obstacle_map = np.ones((height, width, 3), dtype=np.uint8) * 255
 
 
-# Define obstacles
 # Define obstacles
 obstacles = [
     {'shape': 'rectangle', 'bottom_left': (95, 95), 'top_right': (180, 500), 'color': (128, 128, 128), 'thickness':-1},  # Rectangle obstacle 1
@@ -89,29 +100,91 @@ obstacles = [
 
 # Draw obstacles on the obstacle map
 draw_obstacles(obstacle_map, obstacles)
+
+# Function to ask for a point from the user
 def ask_for_point(message, default=None):
     while True:
-                user_input =  input(f"{message} (default: {default[0]},{default[1]}): ")
-                if user_input.strip() == "":
-                    if default is None:
-                        raise ValueError("No default value provided.")
-                    else:
+        user_input =  input(f"{message} (default: {default[0]},{default[1]}): ")
+        if user_input.strip() == "":
+            if default is None:
+                raise ValueError("No default value provided.")
+            else:
+                x, y = default
+                x, y = map_to_bottom_left(x, y, width, height)
+        else:
+            x, y = map(int, user_input.split(','))
+            x, y = map_to_bottom_left(x, y, width, height)
 
-                        x, y = default
-                        x,y=map_to_bottom_left(x,y,width,height)
-                else:
-                    x, y = map(int, user_input.split(','))
-                    x,y=map_to_bottom_left(x,y,width,height)
+        if 0 <= x < width and 0 <= y < height and obstacle_map[y, x, 0] == 255:
+            return x, y
+        else:
+            print("Point is invalid.")
 
-                    
+# Function to calculate the Euclidean distance between two points
+def euclidean_distance(p1, p2):
+    return math.sqrt((p1[0] - p2[0]) ** 2 + (p1[1] - p2[1]) ** 2)
 
+# Dijkstra's algorithm for finding the shortest path
+def dijkstra(start, goal, obstacles):
+    frontier = PriorityQueue()
+    frontier.put(start, 0)
 
-                if 0 <= x < width and 0 <= y < height and obstacle_map[y, x, 0] == 255:
-                    print("Point is valid.")
-                    return x, y
-                else:
-                    print("Point is invalid.")
+    cost_so_far = {start: 0}
+    came_from = {start: None}
 
+    while not frontier.empty():
+        current = frontier.get()
+
+        if current == goal:
+            break
+
+        for next in get_neighbors(current, obstacles):
+            new_cost = cost_so_far[current] + distance_cost(current, next)
+            if next not in cost_so_far or new_cost < cost_so_far[next]:
+                cost_so_far[next] = new_cost
+                priority = new_cost
+                frontier.put(next, priority)
+                came_from[next] = current
+
+    # Trace back the shortest path
+    path = []
+    current = goal
+    while current != start:
+        path.append(current)
+        current = came_from[current]
+    path.append(start)
+    path.reverse()
+
+    return path
+
+# Function to get neighboring points
+def get_neighbors(point, obstacles):
+    x, y = point
+    neighbors = []
+    for dx in [-1, 0, 1]:
+        for dy in [-1, 0, 1]:
+            if dx == 0 and dy == 0:
+                continue
+            neighbor = (x + dx, y + dy)
+            if is_valid_neighbor(neighbor, obstacles):
+                neighbors.append(neighbor)
+    return neighbors
+
+# Function to check if a point is a valid neighbor
+def is_valid_neighbor(point, obstacles):
+    x, y = point
+    if 0 <= x < width and 0 <= y < height and obstacle_map[y, x,0] == 255:
+        return True
+    return False
+
+# Function to calculate the cost of moving from one point to another
+def distance_cost(current, next):
+    dx = abs(current[0] - next[0])
+    dy = abs(current[1] - next[1])
+    if dx == 0 or dy == 0:
+        return 1
+    else:
+        return 1.4
 
 # Ask for start and end points
 start = ask_for_point("Enter start point (x, y): ", (50, 50))
@@ -120,18 +193,18 @@ goal = ask_for_point("Enter goal point (x, y): ", (1150, 50))
 print("Start point:", start)
 print("Goal point:", goal)
 
+# Find the shortest path using Dijkstra's algorithm
+shortest_path = dijkstra(start, goal, obstacles)
 
+# Mark the shortest path on the obstacle map
+for point in shortest_path:
+    cv2.circle(obstacle_map, (point[0], point[1]), 2, (0, 255, 0), -1)  # Explored nodes in green
+    cv2.imshow("Obstacle Map with Shortest Path", obstacle_map)
+    cv2.waitKey(10)
 
-cv2.circle(obstacle_map, start, 5, (0, 255, 0), -1)  # Draw start point in green
-cv2.circle(obstacle_map,goal, 5, (0, 0, 255), -1) 
-
-# Implement Dijkstra's Algorithm
-
-
-
-# Display the obstacle map
-cv2.imshow("Obstacle Map", obstacle_map)
+# Display the obstacle map with the shortest path
+cv2.imshow("Obstacle Map with Shortest Path", obstacle_map)
 cv2.waitKey(0)
-cv2.destroyAllWindows()
 
+cv2.destroyAllWindows()
 # Now you can use obstacle_map for your navigation algorithm with your point robot
