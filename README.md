@@ -56,5 +56,7 @@ You can add this section to your README file to provide users with an example of
 - The visualization is done using the OpenCV library.
 
 ## Results
+![Video Demo](https://github.com/SYED-ABRARUDDIN/ENPM661_Project2/blob/main/obstacle_map_with_shortest_path.mp4)
+
 
 
