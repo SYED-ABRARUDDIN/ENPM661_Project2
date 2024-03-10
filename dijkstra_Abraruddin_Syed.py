@@ -2,6 +2,7 @@ import numpy as np
 import cv2
 import math
 
+from queue import PriorityQueue
 
 
 # Function to map coordinates to the bottom left of the image
@@ -49,6 +50,8 @@ def draw_obstacles(obstacle_map, obstacles):
 
 
 
+
+
 # Define image dimensions
 width = 1200
 height = 500
@@ -86,7 +89,47 @@ obstacles = [
 
 # Draw obstacles on the obstacle map
 draw_obstacles(obstacle_map, obstacles)
+def ask_for_point(message, default=None):
+    while True:
+                user_input =  input(f"{message} (default: {default[0]},{default[1]}): ")
+                if user_input.strip() == "":
+                    if default is None:
+                        raise ValueError("No default value provided.")
+                    else:
 
+                        x, y = default
+                        x,y=map_to_bottom_left(x,y,width,height)
+                else:
+                    x, y = map(int, user_input.split(','))
+                    x,y=map_to_bottom_left(x,y,width,height)
+
+                    
+
+
+                if 0 <= x < width and 0 <= y < height and obstacle_map[y, x, 0] == 255:
+                    print("Point is valid.")
+                    return x, y
+                else:
+                    print("Point is invalid.")
+
+
+# Ask for start and end points
+start = ask_for_point("Enter start point (x, y): ", (50, 50))
+goal = ask_for_point("Enter goal point (x, y): ", (1150, 50))
+
+print("Start point:", start)
+print("Goal point:", goal)
+
+
+
+cv2.circle(obstacle_map, start, 5, (0, 255, 0), -1)  # Draw start point in green
+cv2.circle(obstacle_map,goal, 5, (0, 0, 255), -1) 
+
+# Implement Dijkstra's Algorithm
+
+
+
+# Display the obstacle map
 cv2.imshow("Obstacle Map", obstacle_map)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
