@@ -31,7 +31,7 @@ This Python script implements Dijkstra's algorithm to find the shortest path bet
 
 Sure, here's an example of how you might provide input to the script:
 
-```markdown
+
 ### Example Input
 
 After running the script, you will be prompted to input the start and goal points. Here's an example of how you might provide this input:
