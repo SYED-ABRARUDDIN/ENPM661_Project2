@@ -42,7 +42,7 @@ Enter goal point (x, y):  (default: 1150,50): 50, 1150
 ```
 
 In this example, the start point is at coordinates (50, 50) and the goal point is at coordinates (50,1150). Please note that the coordinates should be within the dimensions of your obstacle map.
-```
+
 
 You can add this section to your README file to provide users with an example of how to input the start and goal points.
 5. The script will display the obstacle map and explored nodes with the shortest path highlighted in blue.
